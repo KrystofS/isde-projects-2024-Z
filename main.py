@@ -1,6 +1,6 @@
 import json
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from app.config import Configuration
@@ -8,6 +8,8 @@ from app.forms.classification_form import ClassificationForm
 from app.ml.classification_utils import classify_image
 from app.utils import list_images
 from app.histogram_utils import calculate_histogram
+import io
+import matplotlib.pyplot as plt
 
 
 app = FastAPI()
@@ -56,6 +58,48 @@ async def request_classification(request: Request):
             "classification_scores": json.dumps(classification_scores),
         },
     )
+
+@app.get("/classifications/dowlonad/results")
+async def download_classification_results(classification_scores: str):
+    """Endpoint to download classification results as a JSON file."""
+    results = json.loads(classification_scores)
+    return StreamingResponse(
+        io.BytesIO(json.dumps(results).encode()),
+        media_type="application/json",
+        headers={"Content-Disposition": "attachment; filename=classification_results.json"}
+    )
+
+
+@app.get("/classifications/download/plot")
+async def download_classification_plot(classification_scores: str):
+    # Parse the classification scores
+    results = json.loads(classification_scores)
+    labels = [item[0] for item in results]
+    values = [item[1] for item in results]
+
+    colors = [(0.102, 0.290, 0.016, 0.8),
+              (0.459, 0.0, 0.078, 0.8),
+              (0.475, 0.341, 0.012, 0.8),
+              (0.024, 0.129, 0.424, 0.8),
+              (0.247, 0.012, 0.333, 0.8)]
+    plt.figure(figsize=(10, 6))
+    plt.barh(labels, values, color=colors[:len(labels)])
+    plt.gca().invert_yaxis()
+    plt.xticks(rotation=45, ha='right')
+    plt.xlabel('Confidence (%)')
+    plt.title('Output scores')
+    plt.grid(True, axis='x')
+    plt.tight_layout()
+
+    # create a buffer to store image data
+    buf = io.BytesIO()
+    plt.savefig(buf, format="png")
+    buf.seek(0)
+
+    return StreamingResponse(
+        buf,
+        media_type="image/png",
+        headers={"Content-Disposition": "attachment; filename=classification_plot.png"})
 
 
 @app.get("/histograms")

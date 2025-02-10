@@ -26,11 +26,12 @@
                     <canvas id="classificationOutput" style="width: 50%; margin: auto; padding: 20px;"></canvas>
                     <div class="align-items-center">
                         <h2 id="waitText"></h2>
-                        </div>
                     </div>
                 </div>
-                <a class="btn btn-primary" href="/classifications" role="button">Back</a>
-        </div>
+                <a class="btn btn-primary" href="/classifications" role="button" style="margin: 10px;">Back</a>
+                <a class="btn btn-secondary" href="/classifications/dowlonad/results?classification_scores={{classification_scores}}" role="button" style="margin: 10px 10px 2px 10px;">Download results</a>
+                <a class="btn btn-secondary" href="/classifications/download/plot?classification_scores={{classification_scores}}" role="button" style="margin: 0 10px 10px 10px;">Download plot</a>
+            </div>
     </div>
     <script src="{{ "static/graph.js" }}" id="makeGraph" classification_scores="{{classification_scores}}"></script>
 {% endblock %}
