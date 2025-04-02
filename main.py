@@ -37,6 +37,7 @@ def home(request: Request):
 
 @app.get("/classifications")
 def create_classify(request: Request):
+    """Render the classification selection page with available images and models."""
     return templates.TemplateResponse(
         "classification_select.html",
         {"request": request, "images": list_images(), "models": Configuration.models},
@@ -45,6 +46,7 @@ def create_classify(request: Request):
 
 @app.post("/classifications")
 async def request_classification(request: Request):
+    """Handle the classification request and render the classification output page."""
     form = ClassificationForm(request)
     await form.load_data()
     image_id = form.image_id
@@ -72,6 +74,7 @@ async def download_classification_results(classification_scores: str):
 
 @app.get("/classifications/download/plot")
 async def download_classification_plot(classification_scores: str):
+    """Download the classification plot as a PNG image."""
     # Parse the classification scores
     results = json.loads(classification_scores)
     labels = [item[0] for item in results]
@@ -104,6 +107,7 @@ async def download_classification_plot(classification_scores: str):
 
 @app.get("/histograms")
 def create_histogram(request: Request):
+    """Render the histogram selection page with available images."""
     return templates.TemplateResponse(
         "histogram_select.html",
         {"request": request, "images": list_images()},
@@ -111,6 +115,7 @@ def create_histogram(request: Request):
 
 @app.post("/histograms")
 async def request_histogram(request: Request):
+    """Handle the histogram request and render the histogram output page."""
     form = ClassificationForm(request)
     await form.load_data()
     image_id = form.image_id
